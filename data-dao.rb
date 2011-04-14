@@ -26,8 +26,15 @@ class DataDao
   end
   
   # fixed テーブルからランダムに1件のデータを取得する
-  def select_fixed_by_random_limit_one
-    return @database.execute("SELECT text FROM fixed ORDER BY RANDOM() LIMIT 1;")
+  ## 呼び出し回数を記録して少ないものの中からランダムに1件抽出する
+  def select_fixed_by_min_use_count_random_limit_one
+    # return @database.execute("SELECT text FROM fixed ORDER BY RANDOM() LIMIT 1;")
+    sql = "SELECT rowid, * FROM fixed WHERE use_count IN (SELECT MIN(use_count) FROM fixed) ORDER BY RANDOM() LIMIT 1;"
+    return @database.execute(sql)
+  end
+  
+  def update_fixed_use_count(rowid, use_count)
+    @database.execute("UPDATE fixed SET use_count = ? WHERE rowid = ?", use_count, rowid)
   end
   
   # 同じ定型文がすでに登録されているか調べる
